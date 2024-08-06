@@ -53,8 +53,9 @@ All values are unsigned unless otherwise specified.
 ## Service 42
 This is the most valuable service. Containing the majority of the runtime information. The service is called 'GetDeviceInfo' and retrieves things like voltages, current, temperatures, SOC, SOH, alarms, status information and capacity information. 
 
-Request: `~22014A42E00201FD28␍`.
-Response: `~22014A00E0C6001A2C14C0100D010D010CDB0D010D010D000D020CE60CF80D020D010CDF0D020D020D000CE0010E0104010E040104010401040104000000000050011F4014F000CC000000000000000000230000000000000000000000000000000000000000000000D582␍`.
+Request: `~22014A42E00201FD28␍`
+
+Response: `~22014A00E0C6001A2C14C0100D010D010CDB0D010D010D000D020CE60CF80D020D010CDF0D020D020D000CE0010E0104010E040104010401040104000000000050011F4014F000CC000000000000000000230000000000000000000000000000000000000000000000D582␍`
 
 ### Request
 The request is a basic request, only containing the 'Command Info' byte, which needs to match the ADR of the specific pack.
@@ -155,8 +156,9 @@ IO status list (bit 0 = false, bit 1 = true):
 ## Service 47
 The service is called 'GetSystemParams' and retrieves system parameters like voltage, current and temperature limits, the number of cells and barcode information.
 
-Request: `~22014A47E00201FD23␍`.
-Response: `~22014A006082000E4209C40073002D2EE00E4209C400102EE01F4005A00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF444A4D3232303531383030363120202020202020E02C␍`.
+Request: `~22014A47E00201FD23␍`
+
+Response: `~22014A006082000E4209C40073002D2EE00E4209C400102EE01F4005A00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF444A4D3232303531383030363120202020202020E02C␍`
 
 ### Request
 The request is a basic request, only containing the 'Command group' byte in the 'Command Info', which needs to match the ADR of the specific pack.
@@ -182,8 +184,9 @@ The request is a basic request, only containing the 'Command group' byte in the 
 ## Service 4F
 This service is called when 'Get Protocol Version' is called. The service only returns the protocol version number.
 
-Request: `~22014A4F0000FD8C␍`.
-Response: `~22014A00E002C8FD14␍`.
+Request: `~22014A4F0000FD8C␍`
+
+Response: `~22014A00E002C8FD14␍`
 
 ### Request
 The request is somewhat unusual, in that it does not contain any CommandInfo. Therefore it's length is empty, and so is the length checksum.
@@ -193,8 +196,9 @@ The only byte returned in this request is 0xC8 (200).
 ## Service 51
 Responsible for returning data upon 'Get Manufacturer Info' is called. Returns Hardware identification and software versions. The service is called 'GetDeviceManufacturerInfo'.
 
-Request: `~22014A510000FDA0␍`.
-Response: `~22014A00604654315F472020202020204855414E593034202020313653313030412020200100020101EFB6␍`.
+Request: `~22014A510000FDA0␍`
+
+Response: `~22014A00604654315F472020202020204855414E593034202020313653313030412020200100020101EFB6␍`
 
 ### Request
 The request is somewhat unusual, in that it does not contain any CommandInfo. Therefore it's length is empty, and so is the length checksum.
@@ -210,8 +214,9 @@ The request is somewhat unusual, in that it does not contain any CommandInfo. Th
 ## Service 83
 Service called when refreshing the "Clear the record" section in BMS software. Contains counters of overcharges and protections. The service is called 'OptWarningCnt'.
 
-Request: `~22014A83C0040101FCC2␍`.
-Response: `~22014A00103C8301015A0007000100000000000000000000000000000000000000000000F224␍`.
+Request: `~22014A83C0040101FCC2␍`
+
+Response: `~22014A00103C8301015A0007000100000000000000000000000000000000000000000000F224␍`
 
 ### Request
 The request is a command-group request, containing the 'Command group' byte in the 'Command Info', which needs to match the ADR of the specific pack. It also has support for multiple operations, 0x01 being the 'Operation' observed when reading the data. Decompile shows support for 0x02, and two extra parameters, presumable for (re)setting the values. Due to lack of interest I've only documented the command which reads the data.
@@ -240,7 +245,8 @@ Service B0 consists out of 4 different modules:
 
 ### Module_MFG_params
 
-Request: `~22014AB0600A010103FF00FB6C␍`.
+Request: `~22014AB0600A010103FF00FB6C␍`
+
 Response: `~22014A0040EEB0010103FF714A44324D30323135303836302031202020202020FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00C043␍`
 
 ### Request
@@ -270,8 +276,9 @@ Having multiple modules, this is a more lengthy command. Besides the default SOI
 | 106 | `FFFFFFFFFFFFFFFFFFFF FFFFFFFFFFFFFFFFFF00` | `20` | - | 'menufactory' in ASCII string |
 
 ### Module_CAP_params
-Request: `~22014AB0600A010104FF00FB6B␍`.
-Response: `~22014A00D030B0010104FF0014F01F40271000003B87000036D044E139C3F38A␍`.
+Request: `~22014AB0600A010104FF00FB6B␍`
+
+Response: `~22014A00D030B0010104FF0014F01F40271000003B87000036D044E139C3F38A␍`
 
 ### Request
 Having multiple modules, this is a more lengthy command. Besides the default SOI, VER, ADR, CID1, CID2 and Length values, the requests consist out of a commandgroup, operation, module, functionid en functionlen parameter:
