@@ -20,6 +20,7 @@ Given the lack of available information I decided to share my findings.
 
 # Physical connections
 As you can see in the picture above, the BMS has three interfaces; RS232 and two interfaces marked (CAN or RS485) and RS485. The two CAN/RS485 interfaces actually both contain RS485 pins, for daisy-chaining. See the picture below for pinout information. I used a basic USB to 485-adapter to connect one of the packs to my Victron setup.
+
 ![bms image](Images/Interfaces.png)
 
 > [!NOTE]
@@ -27,12 +28,12 @@ As you can see in the picture above, the BMS has three interfaces; RS232 and two
 
 
 # RS485 Protocol
-The used protocol on the RS485 bus is developed according to the YD/T1363.1 specification. Using serial asynchronous communication with 8 databits, 1 start bit, 1 stop bit, no parity bit and a baudrate of 19200. It utilizes a master-slave concept, whereby slaves only respond to requests (from a master unit). The framework of this protocol is fairly commonly used. All packets base on start- and end-byte, version, address and command information. You can observe this protocol framework in all kinds of systems. This framework allows implementors to specify various commands and resultsets, what makes this implementation unique for this 'family' of BMS. I've attached two examples of the PYLON specifications, since it uses the same framework, only different implementations/functions: [RS485-protocol-pylon-low-voltage-V3.3-20180821.pdf](Docs/RS485-protocol-pylon-low-voltage-V3.3-20180821.pdf) and [PYLON LFP Battery communication protocol - RS485 V2.8 20161216.pdf](Docs/PYLON LFP Battery communication protocol - RS485 V2.8 20161216.pdf) .
+The used protocol on the RS485 bus is developed according to the YD/T1363.1 specification. Using serial asynchronous communication with 8 databits, 1 start bit, 1 stop bit, no parity bit and a baudrate of 19200. It utilizes a master-slave concept, whereby slaves only respond to requests (from a master unit). The framework of this protocol is fairly commonly used. All packets base on start- and end-byte, version, address and command information. You can observe this protocol framework in all kinds of systems. This framework allows implementors to specify various commands and resultsets, what makes this implementation unique for this 'family' of BMS. I've attached two examples of the PYLON specifications, since it uses the same framework, only different implementations/functions: [RS485-protocol-pylon-low-voltage-V3.3-20180821.pdf](Docs/RS485-protocol-pylon-low-voltage-V3.3-20180821.pdf) and [PYLON-LFP-Battery-communication-protocol-RS485-V2.8-20161216.pdf](Docs/PYLON-LFP-Battery-communication-protocol-RS485-V2.8-20161216).
 
 The basic structure of the dataframe is well described in [BMS-BASEN_Energy-Storage-protocol-En.pdf](Docs/BMS-BASEN_Energy-Storage-protocol-En.pdf), page 2. I'm not going to copy-paste everything from there, but I did find the document to the only fitting documentation of the actual protocol used in these BMS, although it is lacking information. The BMS-software clearly utilizes additional commands to get information this single described command is lacking. 
 I've researched some of these additional commands/services that found of interest using a RS485-tap and used a decompiler to check the way the software interprets its responses. You can find the command and response description based on my notes below. The decompiler showed a bunch more services, but none of real interest. Also, a lot of services are available to configure the BMS. But since the BMS PC-software does that job just fine, that wasn't an area of interest.
 
-The protocol uses formatting based on hexadecimal formatting(e.g. command 0x42 is litteraly sent as '42', or 0x34, 0x32). If you havent yet read the BASEN BMS spec, see the structure of a dataframe below just to help in reading the dataframes further down:
+The protocol uses formatting based on hexadecimal formatting(e.g. command 0x42 is literally sent as '42', or 0x34, 0x32). If you haven't yet read the BASEN BMS spec, see the structure of a dataframe below just to help in reading the dataframes further down:
 
 | B# | Example Char | Description |
 |---|-----|--------|
@@ -50,10 +51,10 @@ Note that I've used a BMS configured with id/address 1, and all the commands use
 All values are unsigned unless otherwise specified.
 
 ## Service 42
-This is the most valuable service. Containing the majority of the runtime information. The service is called 'GetDeviceInfo' and retrieves things like voltages, current, temperatures, soc, soh, alarms, status information and capacity information. 
+This is the most valuable service. Containing the majority of the runtime information. The service is called 'GetDeviceInfo' and retrieves things like voltages, current, temperatures, SOC, SOH, alarms, status information and capacity information. 
 
-| Request | `~22014A42E00201FD28␍` | 
-| Response | `~22014A00E0C6001A2C14C0100D010D010CDB0D010D010D000D020CE60CF80D020D010CDF0D020D020D000CE0010E0104010E040104010401040104000000000050011F4014F000CC000000000000000000230000000000000000000000000000000000000000000000D582␍` |
+Request: `~22014A42E00201FD28␍`.
+Response: `~22014A00E0C6001A2C14C0100D010D010CDB0D010D010D000D020CE60CF80D020D010CDF0D020D020D000CE0010E0104010E040104010401040104000000000050011F4014F000CC000000000000000000230000000000000000000000000000000000000000000000D582␍`.
 
 ### Request
 The request is a basic request, only containing the 'Command Info' byte, which needs to match the ADR of the specific pack.
@@ -154,8 +155,8 @@ IO status list (bit 0 = false, bit 1 = true):
 ## Service 47
 The service is called 'GetSystemParams' and retrieves system parameters like voltage, current and temperature limits, the number of cells and barcode information.
 
-| Request | `~22014A47E00201FD23␍` | 
-| Response | `~22014A006082000E4209C40073002D2EE00E4209C400102EE01F4005A00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF444A4D3232303531383030363120202020202020E02C␍` |
+Request: `~22014A47E00201FD23␍`.
+Response: `~22014A006082000E4209C40073002D2EE00E4209C400102EE01F4005A00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF444A4D3232303531383030363120202020202020E02C␍`.
 
 ### Request
 The request is a basic request, only containing the 'Command group' byte in the 'Command Info', which needs to match the ADR of the specific pack.
@@ -175,14 +176,14 @@ The request is a basic request, only containing the 'Command group' byte in the 
 | 26 | `1F40 (8000)` | `2` | `/1000` | design_capacity_none |
 | 28 | `05A0 (1440)` | `2` | `/1000` | historical_data_storage_interval |
 | 30 | `0000 (0000)` | `2` | - | balanced_mode |
-| 31 | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` | `20` | - | product_barcode in ASCII string |
-| 31 | `444A4D3232303531383030363120202020202020` | `20` | - | BMS_barcode in ASCII string |
+| 31 | `FFFFFFFFFFFFFFFFFFFF FFFFFFFFFFFFFFFFFFFF` | `20` | - | product_barcode in ASCII string |
+| 31 | `444A4D32323035313830 30363120202020202020` | `20` | - | BMS_barcode in ASCII string |
 
 ## Service 4F
 This service is called when 'Get Protocol Version' is called. The service only returns the protocol version number.
 
-| Request | `~22014A4F0000FD8C␍` | 
-| Response | `~22014A00E002C8FD14␍` |
+Request: `~22014A4F0000FD8C␍`.
+Response: `~22014A00E002C8FD14␍`.
 
 ### Request
 The request is somewhat unusual, in that it does not contain any CommandInfo. Therefore it's length is empty, and so is the length checksum.
@@ -192,8 +193,8 @@ The only byte returned in this request is 0xC8 (200).
 ## Service 51
 Responsible for returning data upon 'Get Manufacturer Info' is called. Returns Hardware identification and software versions. The service is called 'GetDeviceManufacturerInfo'.
 
-| Request | `~22014A510000FDA0␍` | 
-| Response | `~22014A00604654315F472020202020204855414E593034202020313653313030412020200100020101EFB6␍` |
+Request: `~22014A510000FDA0␍`.
+Response: `~22014A00604654315F472020202020204855414E593034202020313653313030412020200100020101EFB6␍`.
 
 ### Request
 The request is somewhat unusual, in that it does not contain any CommandInfo. Therefore it's length is empty, and so is the length checksum.
@@ -209,8 +210,8 @@ The request is somewhat unusual, in that it does not contain any CommandInfo. Th
 ## Service 83
 Service called when refreshing the "Clear the record" section in BMS software. Contains counters of overcharges and protections. The service is called 'OptWarningCnt'.
 
-| Request | `~22014A83C0040101FCC2␍` | 
-| Response | `~22014A00103C8301015A0007000100000000000000000000000000000000000000000000F224␍` |
+Request: `~22014A83C0040101FCC2␍`.
+Response: `~22014A00103C8301015A0007000100000000000000000000000000000000000000000000F224␍`.
 
 ### Request
 The request is a command-group request, containing the 'Command group' byte in the 'Command Info', which needs to match the ADR of the specific pack. It also has support for multiple operations, 0x01 being the 'Operation' observed when reading the data. Decompile shows support for 0x02, and two extra parameters, presumable for (re)setting the values. Due to lack of interest I've only documented the command which reads the data.
@@ -239,8 +240,8 @@ Service B0 consists out of 4 different modules:
 
 ### Module_MFG_params
 
-| Request | `~22014AB0600A010103FF00FB6C␍` | 
-| Response | `~22014A0040EEB0010103FF714A44324D30323135303836302031202020202020FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00C043␍` |
+Request: `~22014AB0600A010103FF00FB6C␍`.
+Response: `~22014A0040EEB0010103FF714A44324D30323135303836302031202020202020FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00C043␍`
 
 ### Request
 Having multiple modules, this is a more lengthy command. Besides the default SOI, VER, ADR, CID1, CID2 and Length values, the requests consist out of a commandgroup, operation, module, functionid en functionlen parameter:
@@ -262,15 +263,15 @@ Having multiple modules, this is a more lengthy command. Besides the default SOI
 | 10 | `03` | `1` | - | Module (for multi-module services, such as service B0) |
 | 11 | `FF` | `1` | - | Function ID |
 | 12 | `00` | `1` | - | Function LEN |
-| 13 | `4A44324D30323135303836302031202020202020FFFFFFFFFFFFFFFFFFFF` | `30` | - | 'packSn' in ASCII string |
-| 43 | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` | `30` | - | 'productId' in ASCII string |
-| 73 | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` | `30` | - | 'bmsId' in ASCII string |
+| 13 | `4A44324D303231353038 36302031202020202020 FFFFFFFFFFFFFFFFFFFF` | `30` | - | 'packSn' in ASCII string |
+| 43 | `FFFFFFFFFFFFFFFFFFFF FFFFFFFFFFFFFFFFFFFF FFFFFFFFFFFFFFFFFFFF` | `30` | - | 'productId' in ASCII string |
+| 73 | `FFFFFFFFFFFFFFFFFFFF FFFFFFFFFFFFFFFFFFFF FFFFFFFFFFFFFFFFFFFF` | `30` | - | 'bmsId' in ASCII string |
 | 103 | `FFFFFF` | `3` | - | Borndata (read as three seperate bytes) |
 | 106 | `FFFFFFFFFFFFFFFFFFFF FFFFFFFFFFFFFFFFFF00` | `20` | - | 'menufactory' in ASCII string |
 
 ### Module_CAP_params
-| Request | `~22014AB0600A010104FF00FB6B␍` | 
-| Response | `~22014A00D030B0010104FF0014F01F40271000003B87000036D044E139C3F38A␍` |
+Request: `~22014AB0600A010104FF00FB6B␍`.
+Response: `~22014A00D030B0010104FF0014F01F40271000003B87000036D044E139C3F38A␍`.
 
 ### Request
 Having multiple modules, this is a more lengthy command. Besides the default SOI, VER, ADR, CID1, CID2 and Length values, the requests consist out of a commandgroup, operation, module, functionid en functionlen parameter:
@@ -324,7 +325,7 @@ The daren485 implementation for dbus-serialbattery is committed on github and pr
 - Call the reinstall-local script at: `/data/etc/dbus-serialbattery/reinstall-local.sh` 
 
 > [!NOTE]
-> The implementation is written for the current master-branch of the mr-manual repo of dbus-serialbattery (as of 02-08-2024). I've found that there is some rework going on and the versions of mr-manual and Louisvdw aren't fully aligned just yet. If you want to run this on the Louisvdw release, you need to change a few abstract variables to the old names you can find in the battery.py abstract class. Mainly the self.protection and self.history values don't align.
+> The implementation is written for the current master-branch of the mr-manual repo of dbus-serialbattery (as of 02-08-2024). I've found that there is some rework going on and the versions of mr-manual and Louisvdw aren't fully aligned just yet. If you want to run this on the Louisvdw release, you need to change a few variables to the old names you can find in battery.py. Mainly the self.protection and self.history values don't align.
 
 
 # Sources
