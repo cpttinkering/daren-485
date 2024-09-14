@@ -9,7 +9,6 @@
 # avoid importing wildcards, remove unused imports
 from battery import Battery, Cell
 from utils import open_serial_port, logger
-import utils
 from time import sleep
 from struct import unpack
 from re import findall
@@ -79,19 +78,12 @@ class Daren485(Battery):
                         result = self.get_serial(ser)
 
                         result = result and self.get_cells_params(ser)
+
                         if result:
                             # init the cell array once
                             if len(self.cells) == 0:
                                 for _ in range(self.cell_count):
                                     self.cells.append(Cell(False))
-
-                            # init battery voltages
-                            self.max_battery_voltage = (
-                                utils.MAX_CELL_VOLTAGE * self.cell_count
-                            )
-                            self.min_battery_voltage = (
-                                utils.MIN_CELL_VOLTAGE * self.cell_count
-                            )
 
                         result = result and self.get_realtime_data(ser)
 
@@ -107,10 +99,11 @@ class Daren485(Battery):
             logger.warning("Couldn't open serial port")
 
         if not result:  # TROUBLESHOOTING for no reply errors
-            logger.info(
+            logger.debug(
                 f"get_settings: result: {result}."
                 + " If you don't see this warning very often, you can ignore it."
             )
+            logger.error(">>> ERROR: No reply - returning")
 
         return result
 
@@ -179,7 +172,7 @@ class Daren485(Battery):
             else:
                 logger.error("get_serial response length error!")
         else:
-            logger.error("get_serial response error!")
+            logger.debug("get_serial response error!")
 
         return result
 
@@ -297,6 +290,12 @@ class Daren485(Battery):
                 else:
                     self.protection.low_cell_voltage = 0
 
+                # check bit 7 for low_BAT_alarm from warningstatus
+                if warningstatus & (1 << 7):
+                    self.protection.low_soc = 2
+                else:
+                    self.protection.low_soc = 0
+
                 # check bit 2 for CHG_OC_PROT
                 if currentstatus & (1 << 2):
                     self.protection.high_charge_current = 2
@@ -328,10 +327,11 @@ class Daren485(Battery):
                 else:
                     self.protection.cell_imbalance = 0
 
-                # if something is in warning, report internal failure. warningstatus
+                # if something else is in warning, report internal failure. warningstatus
                 # contains all sorts of internal components, such as CHG_FET, NTC_fail,
                 # cell_fail, chg_mos_fail, disch_mos_fail, etc.
-                if warningstatus > 0:
+                # Ignore V_DIF_alarm and low_BAT_alarm flags, since we're allready checking for those.
+                if (warningstatus & 0b01111110) > 0:
                     self.protection.internal_failure = 2
                 else:
                     self.protection.internal_failure = 0
@@ -380,6 +380,12 @@ class Daren485(Battery):
                     self.protection.high_internal_temp = 1
                 else:
                     self.protection.high_internal_temp = 0
+
+                # check bit 13 for blown_fuse from voltagestatus
+                if voltagestatus & (1 << 13):
+                    self.protection.fuse_blown = 2
+                else:
+                    self.protection.fuse_blown = 0
 
                 if fetstatus & (1 << 0):
                     self.charge_fet = True
@@ -536,8 +542,8 @@ class Daren485(Battery):
         try:
             CID2 = buff[7:9]
             if self.CID2_decode(CID2) == -1:
-                logger.error("CID2_Decode error!")
-                logger.error("Buffer contents: {}".format(buff))
+                logger.debug("CID2_Decode error!")
+                logger.debug("Buffer contents: {}".format(buff))
                 return False
         except Exception as e:
             logger.error("read_response Data invalid!: {}".format(e))
