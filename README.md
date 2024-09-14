@@ -3,7 +3,7 @@ This is a research repository providing the results of getting RS485 communicati
 
 Since about a year I run a Victron-powered ESS setup, with 4 16S 48V 105Ah batterypacks from the usual place. The BMS in these packs uses both CAN and RS485 for communications. Adding a different brand of BMS caused the need to switch from CAN-based to RS485 comms, to be able to integrate both in the Victron setup.
 
-TL;DR: dbus-serialbattery pullrequest underway, wait for next release, or add manually as described in [Installation in dbus-serialbattery](#installation-in-dbus-serialbattery).
+TL;DR: dbus-serialbattery integration complete in mr-manuel's repo of [dbus-serialbattery](https://github.com/mr-manuel/venus-os_dbus-serialbattery). For manual installation see [Installation in dbus-serialbattery](#installation-in-dbus-serialbattery).
 
 # The BMS
 
@@ -322,7 +322,7 @@ The USB-adapters I'm using are unique to my system, so I used the wikipage to ad
 - Reboot.
 
 # Installation in dbus-serialbattery
-The daren485 implementation for dbus-serialbattery is committed on github and presented to the dbus-serialbattery project trough pullrequest. Until that time, this is how you install this implementation in your running instance. 
+The daren485 implementation is already integrated in the dbus-serialbattery repository of mr-manuel at https://github.com/mr-manuel/venus-os_dbus-serialbattery. If you're not yet on the latest release, and for legacy purposes, this is how you install this implementation in your running instance. 
 
 - Download [daren_485.py](dbus-serialbattery/daren_485.py) and place in `/data/etc/dbus-serialbattery/bms`
 - Add `from bms.daren_485 import Daren485` to the `import battery classes` section of the file `/data/etc/dbus-serialbattery/dbus-serialbattery.py` at line 23.
